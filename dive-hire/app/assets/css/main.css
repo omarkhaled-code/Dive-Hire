@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+.normal-link {
+  @apply text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors text-sm font-medium leading-normal;
+}
+
+.router-link-active {
+  @apply text-[#1337ec] text-sm font-semibold leading-normal border-b-2 border-[#1337ec] py-1;
+}
+
+.skill {
+  @apply px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium rounded-md;
+}
+
+.glass-header {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+}
+
+/* Google Stitch full theme converted to Tailwind v4 */
+@theme {
+  /* Primary */
+  --color-primary: #0300b2;
+  --color-primary-container: #1313ec;
+  --color-primary-fixed: #e0e0ff;
+  --color-primary-fixed-dim: #bfc2ff;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #aeb2ff;
+  --color-on-primary-fixed: #01006e;
+  --color-on-primary-fixed-variant: #0d09ea;
+
+  /* Secondary */
+  --color-secondary: #6c3dc9;
+  --color-secondary-container: #8558e3;
+  --color-secondary-fixed: #eaddff;
+  --color-secondary-fixed-dim: #d1bcff;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #fffbff;
+  --color-on-secondary-fixed: #24005b;
+  --color-on-secondary-fixed-variant: #5620b2;
+
+  /* Tertiary */
+  --color-tertiary: #6b0300;
+  --color-tertiary-container: #960600;
+  --color-tertiary-fixed: #ffdad4;
+  --color-tertiary-fixed-dim: #ffb4a7;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #ff9f8f;
+  --color-on-tertiary-fixed: #400100;
+  --color-on-tertiary-fixed-variant: #920600;
+
+  /* Surface / Background */
+  --color-background: #f8f9fb;
+  --color-surface: #f8f9fb;
+  --color-surface-bright: #f8f9fb;
+  --color-surface-dim: #d9dadc;
+  --color-surface-variant: #e1e2e4;
+  --color-surface-container: #edeef0;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #e7e8ea;
+  --color-surface-container-highest: #e1e2e4;
+  --color-surface-tint: #353cff;
+
+  /* Text colors */
+  --color-on-background: #191c1e;
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #454557;
+  --color-inverse-on-surface: #f0f1f3;
+  --color-inverse-surface: #2e3132;
+  --color-inverse-primary: #bfc2ff;
+
+  /* Error */
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+
+  /* Outline */
+  --color-outline: #757589;
+  --color-outline-variant: #c6c4da;
+}
+
+@theme {
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-label: "Inter", sans-serif;
+}
