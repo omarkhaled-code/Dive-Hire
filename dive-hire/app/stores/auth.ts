@@ -72,10 +72,13 @@ export const useAuthStore = defineStore("auth", () => {
 
   // ───── Fetch current user (on app boot) ─────
   async function fetchUser() {
+    console.log(token);
+    
+    
     if (!token.value) return;
     try {
       const data = await $fetch<{ user: User }>("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token.value}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
       });
       user.value = data.user;
     } catch {
@@ -87,11 +90,13 @@ export const useAuthStore = defineStore("auth", () => {
   function _setSession(u: User, t: string) {
     user.value = u;
     token.value = t;
+    localStorage.setItem("token", token.value)
   }
 
   function _clearSession() {
     user.value = null;
     token.value = null;
+    localStorage.removeItem('token')
   }
   function handleNavigate(user: any, hasProfile: boolean = false) {
     console.log(user);

@@ -8,8 +8,8 @@ const errorMessage = ref('')
 
 
 const checkExperienceCompletion = () => {
-    
-    
+
+
     const lastEntry: any = profile.value.experiences[0]
 
     if (!lastEntry.company_name || !lastEntry.job_title || !lastEntry.start_date || !lastEntry.end_date) {
@@ -264,19 +264,19 @@ const handleNavigate = () => {
 
                 <!-- Form Section - Bento Grid Style -->
                 <div v-if="displayPage === 'basic-info'">
-
                     <DeveloperProfileBasicInfo :profile="profile" />
                 </div>
-                <!-- <div v-if="displayPage === 'experience'">
-                    <DeveloperCreateProfileExperience :profile="profile" />
+                <div v-if="displayPage === 'experience'">
+                    
+                    <DeveloperProfileExperience :profile="profile" />
 
                 </div>
                 <div v-if="displayPage === 'skills'">
-                    <DeveloperCreateProfileSkills :profile="profile" />
+                    <DeveloperProfileSkills :profile="profile" />
                 </div>
                 <div v-if="displayPage === 'projects'">
-                    <DeveloperCreateProfileProjects :profile="profile" />
-                </div> -->
+                    <DeveloperProfileProjects :profile="profile" />
+                </div>
 
                 <!-- Action Buttons -->
                 <div class="flex items-center mt-12"

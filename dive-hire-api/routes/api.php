@@ -42,7 +42,8 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::get('/applications/{applicationId}', [ApplicationController::class, 'show']);
 
     // user
-    Route::get('/me', [AuthController::class, 'user']);
+    // Route::get('/me', [AuthController::class, 'user']);
+    Route::get('/me', [AuthController::class, 'me']);
 
     // Add more authenticated routes here
 });
