@@ -12,14 +12,26 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('experiences', function (Blueprint $table) {
+
+
+
             $table->id();
-            $table->foreignId('developer_profile_id')->constrained()->cascadeOnDelete();
-            $table->string('company');
-            $table->string('role');
-            $table->string('location')->nullable();
+
+            $table->foreignId('developer_profile_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->string('company_name');
+
+            $table->string('job_title');
+
             $table->date('start_date');
-            $table->date('end_date')->nullable(); // null = current job
-            $table->text('description')->nullable();
+
+            $table->date('end_date')->nullable();
+
+            // Store achievements as JSON
+            $table->json('achievements')->nullable();
+
             $table->timestamps();
         });
     }

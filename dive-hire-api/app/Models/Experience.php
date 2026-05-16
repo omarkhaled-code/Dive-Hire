@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
 
-#[Fillable(['developer_profile_id', 'company', 'role', 'location', 'start_date', 'end_date', 'description'])]
+#[Fillable(['developer_profile_id', 'company_name', 'job_title', 'start_date', 'end_date', 'achievements'])]
 class Experience extends Model
 {
     public function developerProfile()
