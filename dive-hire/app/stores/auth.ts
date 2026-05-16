@@ -42,13 +42,14 @@ export const useAuthStore = defineStore("auth", () => {
     loading.value = true;
     error.value = null;
     try {
-      const data = await $fetch<{ user: User; token: string, has_profile:boolean }>(
-        "/api/auth/login",
-        {
-          method: "POST",
-          body: form,
-        },
-      );
+      const data = await $fetch<{
+        user: User;
+        token: string;
+        has_profile: boolean;
+      }>("/api/auth/login", {
+        method: "POST",
+        body: form,
+      });
       _setSession(data.user, data.token);
       loading.value = false;
       handleNavigate(data.user, data.has_profile);
@@ -73,12 +74,11 @@ export const useAuthStore = defineStore("auth", () => {
   // ───── Fetch current user (on app boot) ─────
   async function fetchUser() {
     console.log(token);
-    
-    
+
     if (!token.value) return;
     try {
       const data = await $fetch<{ user: User }>("/api/auth/me", {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       user.value = data.user;
     } catch {
@@ -90,17 +90,17 @@ export const useAuthStore = defineStore("auth", () => {
   function _setSession(u: User, t: string) {
     user.value = u;
     token.value = t;
-    localStorage.setItem("token", token.value)
+    localStorage.setItem("token", token.value);
   }
 
   function _clearSession() {
     user.value = null;
     token.value = null;
-    localStorage.removeItem('token')
+    localStorage.removeItem("token");
   }
   function handleNavigate(user: any, hasProfile: boolean = false) {
     console.log(user);
-    
+
     if (hasProfile === false) {
       if (user.role === "developer") {
         navigateTo("/developer/profile/setup");
@@ -111,7 +111,10 @@ export const useAuthStore = defineStore("auth", () => {
       navigateTo("/jobs");
     }
   }
-  
+  function clearError() {
+    error.value = null;
+  }
+
   return {
     // State
     user,
@@ -129,5 +132,6 @@ export const useAuthStore = defineStore("auth", () => {
     login,
     logout,
     fetchUser,
+    clearError,
   };
 });

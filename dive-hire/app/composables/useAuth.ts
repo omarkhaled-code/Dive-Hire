@@ -21,5 +21,6 @@ export const useAuth = () => {
         login: store.login,
         logout: store.logout,
         fetchUser: store.fetchUser,
+        clearError: store.clearError,
     }
 }

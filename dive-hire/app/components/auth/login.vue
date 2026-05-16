@@ -11,26 +11,42 @@ const errors = ref<{ email?: string; password?: string }>({})
 const passwordInput = ref<HTMLInputElement | null>(null);
 const { validateLogin } = useValidation()
 
-const { login, error, loading } = useAuth()
+const {
+    login,
+    error,
+    loading,
+    clearError
+} = useAuth()
 
 const handleLogin = async () => {
 
+    clearError()
 
-    const result = validateLogin(formData.email, formData.password)
+    errors.value = {}
+
+    const result = validateLogin(
+        formData.email,
+        formData.password
+    )
 
     if (!result.email) {
-        return errors.value.email = 'The email is not correct'
+
+        errors.value.email =
+            'The email is not correct'
+
+        return
     }
 
-
     if (!result.password) {
-        return errors.value.password = 'Password should contain at least 8 char!'
+
+        errors.value.password =
+            'Password should contain at least 8 char!'
+
+        return
     }
 
     await login(formData)
-
 }
-
 
 const togglePasswordVisibility = () => {
     passwordInput.value?.type === 'password'

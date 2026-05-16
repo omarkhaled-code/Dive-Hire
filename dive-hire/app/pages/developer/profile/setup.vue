@@ -1,66 +1,51 @@
 <script setup lang="ts">
 
+interface Achievement {
+    achievement: string
+}
 
-const displayPage = ref('basic-info')
+interface Experience {
+    id: number
+    company_name: string
+    job_title: string
+    start_date: string
+    end_date: string
+    achievements: Achievement[]
+}
+
+interface Project {
+    id: number
+    title: string
+    description: string
+    techStack: string[]
+    projectLink: string
+    thumbnail: File | null
+    isOpen: boolean
+}
+
+interface Profile {
+    avatar: File | string
+    phone: string
+    location: string
+    job_title: string
+    ready_for_work: string
+    bio: string
+    skills: string[]
+    experiences: Experience[]
+    education: any[]
+    experience_years: number
+    cv: File | string
+    projects: Project[]
+}
+
+type Page = 'basic-info' | 'experience' | 'skills' | 'projects'
+
+const displayPage = ref<Page>('basic-info')
 const displayErrorToast = ref<boolean>(false)
 
 const errorMessage = ref('')
 
-
-const checkExperienceCompletion = () => {
-
-
-    const lastEntry: any = profile.value.experiences[0]
-
-    if (!lastEntry.company_name || !lastEntry.job_title || !lastEntry.start_date || !lastEntry.end_date) {
-        return false
-    }
-    return true
-}
-
-
-const handleContinue = () => {
-    if (displayPage.value === 'basic-info') {
-        displayPage.value = 'experience'
-
-    } else if (displayPage.value === 'experience') {
-        if (!checkExperienceCompletion()) {
-            alert('Please complete your experience entry before proceeding or remove the incomplete entry.')
-            return
-        }
-        displayPage.value = 'skills'
-    } else if (displayPage.value === 'skills') {
-        displayPage.value = 'projects'
-    } else {
-        handleCreateProfile()
-    }
-}
-
-const handleBack = () => {
-    if (displayPage.value === 'experience') {
-        displayPage.value = 'basic-info'
-    } else if (displayPage.value === 'skills') {
-        displayPage.value = 'experience'
-    } else if (displayPage.value === 'projects') {
-        displayPage.value = 'skills'
-    }
-}
-
-
-const continueTo = computed(() => {
-    if (displayPage.value === 'basic-info') {
-        return 'Continue To Experience'
-    } else if (displayPage.value === 'experience') {
-        return 'Continue To Skills'
-    } else if (displayPage.value === 'skills') {
-        return 'Continue To Projects'
-    } else {
-        return 'Save Profile'
-    }
-})
-
-
-const profile = ref<any>({
+const profile = ref<Profile>({
     avatar: '',
     phone: '0123456789',
     location: 'Cairo, Egypt',
@@ -79,14 +64,18 @@ const profile = ref<any>({
             id: 1,
             company_name: 'Tech Innovators Inc.',
             job_title: 'Senior Software Architect',
-            start_date: '2026-05',
-            end_date: '2026-04',
+            start_date: '2026-04',
+            end_date: '2026-05',
             achievements: [
-                { achievement: 'Led the architecture and development of a high-traffic e-commerce platform, resulting in a 30% increase in sales.' },
-                { achievement: 'Implemented microservices architecture, improving system scalability and reducing downtime by 40%.' },
-                { achievement: 'Mentored a team of 10+ developers, fostering a culture of continuous learning and improvement.' }
-
-
+                {
+                    achievement: 'Led the architecture and development of a high-traffic e-commerce platform, resulting in a 30% increase in sales.'
+                },
+                {
+                    achievement: 'Implemented microservices architecture, improving system scalability and reducing downtime by 40%.'
+                },
+                {
+                    achievement: 'Mentored a team of 10+ developers, fostering a culture of continuous learning and improvement.'
+                }
             ]
         }
     ],
@@ -106,92 +95,194 @@ const profile = ref<any>({
     ]
 })
 
+const checkExperienceCompletion = () => {
+    if (!profile.value.experiences.length) {
+        return true
+    }
 
-const goTo = (route = 'basic-info') => {
-    if (displayPage.value === 'experience' && !checkExperienceCompletion()) {
+    return profile.value.experiences.every((exp) => {
+        return (
+            exp.company_name?.trim() &&
+            exp.job_title?.trim() &&
+            exp.start_date &&
+            exp.end_date
+        )
+    })
+}
+
+const handleContinue = () => {
+    if (displayPage.value === 'basic-info') {
+        displayPage.value = 'experience'
+
+    } else if (displayPage.value === 'experience') {
+
+        if (!checkExperienceCompletion()) {
+            alert('Please complete your experience entry before proceeding.')
+            return
+        }
+
+        displayPage.value = 'skills'
+
+    } else if (displayPage.value === 'skills') {
+
+        displayPage.value = 'projects'
+
+    } else {
+
+        handleCreateProfile()
+
+    }
+}
+
+const handleBack = () => {
+    if (displayPage.value === 'experience') {
+        displayPage.value = 'basic-info'
+
+    } else if (displayPage.value === 'skills') {
+
+        displayPage.value = 'experience'
+
+    } else if (displayPage.value === 'projects') {
+
+        displayPage.value = 'skills'
+
+    }
+}
+
+const continueTo = computed(() => {
+
+    switch (displayPage.value) {
+
+        case 'basic-info':
+            return 'Continue To Experience'
+
+        case 'experience':
+            return 'Continue To Skills'
+
+        case 'skills':
+            return 'Continue To Projects'
+
+        default:
+            return 'Save Profile'
+    }
+
+})
+
+const goTo = (route: Page = 'basic-info') => {
+
+    if (
+        displayPage.value === 'experience' &&
+        !checkExperienceCompletion()
+    ) {
         alert('Complete experience first')
         return
     }
+
     displayPage.value = route
 }
 
 const handleCreateProfile = async () => {
-    const formData = new FormData()
-
-    formData.append('phone', profile.value.phone)
-    formData.append('location', profile.value.location)
-    formData.append('job_title', profile.value.job_title)
-    formData.append('bio', profile.value.bio)
-    formData.append('ready_for_work', profile.value.ready_for_work)
-
-
-
-    profile.value.skills.forEach((skill, index) => {
-        formData.append(`skills[${index}]`, skill)
-    })
-
-    // Experience (Array of Objects)
-    profile.value.experiences.forEach((exp, index) => {
-        // Correct naming convention for Laravel nested validation
-        formData.append(`experience[${index}][company_name]`, exp.company_name)
-        formData.append(`experience[${index}][job_title]`, exp.job_title)
-        formData.append(`experience[${index}][start_date]`, exp.start_date)
-        formData.append(`experience[${index}][end_date]`, exp.end_date)
-
-
-        // Nested Array inside the Object (Achievements)
-        exp.achievements.forEach((ach, achIndex) => {
-            formData.append(`experience[${index}][achievements][${achIndex}]`, ach)
-        })
-    })
-
-    // Projects (Array of Objects)
-    profile.value.projects.forEach((pro, index) => {
-        // Correct naming convention for Laravel nested validation
-        formData.append(`project[${index}][title]`, pro.title)
-        formData.append(`project[${index}][description]`, pro.description)
-        formData.append(`project[${index}][projectLink]`, pro.projectLink)
-
-        // Nested Array inside the Object (Achievements)
-        pro.techStack.forEach((tag, tagIndex) => {
-            formData.append(`project[${index}][teachStack][${tagIndex}]`, tag)
-        })
-        if (pro.thumbnail instanceof File) {
-
-            formData.append(`project[${index}][thumbnail]`, pro.thumbnail)
-
-        }
-    })
-
-
-    if (profile.value.avatar instanceof File) {
-
-        formData.append('avatar', profile.value.avatar)
-    }
-
-    if (profile.value.cv instanceof File) {
-        formData.append('cv', profile.value.cv)
-    }
-
 
     try {
-        await $fetch('/api/profile', {
+
+        const formData = new FormData()
+
+        formData.append('phone', profile.value.phone)
+        formData.append('location', profile.value.location)
+        formData.append('job_title', profile.value.job_title)
+        formData.append('bio', profile.value.bio)
+        formData.append('ready_for_work', profile.value.ready_for_work)
+
+        // Skills
+        profile.value.skills.forEach((skill, index) => {
+            formData.append(`skills[${index}]`, skill)
+        })
+
+        // Experience
+        profile.value.experiences.forEach((exp, index) => {
+
+            formData.append(`experience[${index}][company_name]`, exp.company_name)
+            formData.append(`experience[${index}][job_title]`, exp.job_title)
+            formData.append(`experience[${index}][start_date]`, exp.start_date)
+            formData.append(`experience[${index}][end_date]`, exp.end_date)
+
+            exp.achievements.forEach((ach, achIndex) => {
+
+                formData.append(
+                    `experience[${index}][achievements][${achIndex}]`,
+                    ach.achievement
+                )
+
+            })
+
+        })
+
+        // Projects
+        profile.value.projects.forEach((pro, index) => {
+
+            formData.append(`project[${index}][title]`, pro.title)
+            formData.append(`project[${index}][description]`, pro.description)
+            formData.append(`project[${index}][projectLink]`, pro.projectLink)
+
+            pro.techStack.forEach((tag, tagIndex) => {
+
+                formData.append(
+                    `project[${index}][techStack][${tagIndex}]`,
+                    tag
+                )
+
+            })
+
+            if (pro.thumbnail instanceof File) {
+
+                formData.append(
+                    `project[${index}][thumbnail]`,
+                    pro.thumbnail
+                )
+
+            }
+
+        })
+
+        // Avatar
+        if (profile.value.avatar instanceof File) {
+
+            formData.append('avatar', profile.value.avatar)
+
+        }
+
+        // CV
+        if (profile.value.cv instanceof File) {
+
+            formData.append('cv', profile.value.cv)
+
+        }
+
+        
+
+        await $fetch('/api/developer/profile', {
             method: 'POST',
             body: formData,
         })
-        navigateTo('developer/profile')
-    } catch (error) {
-        errorMessage.value = error?.data?.message || 'Something went wrong'
+
+        navigateTo('/developer/profile')
+
+    } catch (error: unknown) {
+
+        const err = error as any
+
+        errorMessage.value =
+            err?.data?.message || 'Something went wrong'
+
         displayErrorToast.value = true
+
     }
 
 }
 
-
 const closeToast = () => {
-    displayErrorToast.value = false;
+    displayErrorToast.value = false
 }
-
 
 const handleNavigate = () => {
     navigateTo('/developer')
