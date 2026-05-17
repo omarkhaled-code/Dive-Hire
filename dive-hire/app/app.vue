@@ -1,11 +1,13 @@
 <script setup>
 
-// const { fetchUser } = useAuth()
+const { fetchUser, user } = useAuth()
 
 
 
 
-// await fetchUser()
+await fetchUser()
+
+
 
 
 </script>

@@ -1,63 +1,119 @@
 <script setup lang="ts">
-import type { RegisterData } from '~/types/user';
-
 
 const emit = defineEmits(['switch-mode'])
 
-const errors = ref<{ name?: string, email?: string; password?: string }>({})
-
-const { validateRegister } = useValidation()
-
-const formData = reactive<RegisterData>({
-    name: '',
+const formData = reactive({
+    name: "",
     email: '',
     password: '',
-    role: 'developer' // Default role
+    role: 'developer'
 })
 
+const errors = ref<{
+    name?:string,
+    email?: string
+    password?: string
+    
+}>({})
 
-const passwordInput = ref<HTMLInputElement | null>(null);
+const passwordInput =
+    ref<HTMLInputElement | null>(null)
 
-const { register, error, loading } = useAuth()
 
+
+const { validateLogin } = useValidation()
+
+const {
+    register,
+    error,
+    loading,
+    clearError
+} = useAuth()
 
 const handleRegister = async () => {
-    const result = validateRegister(formData.email, formData.password)
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reset Errors
+    |--------------------------------------------------------------------------
+    */
+
+    clearError()
+
     errors.value = {}
-    let hasError = false;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validation
+    |--------------------------------------------------------------------------
+    */
+
+
+    const result = validateLogin(
+        formData.email,
+        formData.password
+    )
 
     if (!formData.name) {
-         errors.value.name = "The user name is required"
-         hasError = true;
-    }
 
+        errors.value.name =
+            'The name is not required'
+
+        return
+
+    }
     if (!result.email) {
-         errors.value.email = 'The email is not correct'
-         hasError = true;
-    }
 
+        errors.value.email =
+            'The email is not correct'
+
+        return
+
+    }
 
     if (!result.password) {
-         errors.value.password = 'Password should contain at least 8 char!'
-         hasError = true;
-    }
 
-    if(hasError) return;
+        errors.value.password =
+            'Password should contain at least 8 characters'
+
+        return
+
+    }
+    
+
+   
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Register
+    |--------------------------------------------------------------------------
+    */
+
 
     await register(formData)
 
-    
-
 }
 
+const togglePasswordVisibility = (
+    input: HTMLInputElement | null
+) => {
 
-const togglePasswordVisibility = () => {
-    passwordInput.value?.type === 'password'
-        ? (passwordInput.value.type = 'text')
-        : (passwordInput.value!.type = 'password');
+    if (!input) return
+
+    input.type =
+        input.type === 'password'
+            ? 'text'
+            : 'password'
 }
+
+onMounted(() => {
+  clearError()
+})
 </script>
-
 <template>
     <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-[#101322]">
         <div class="w-full max-w-[440px] flex flex-col">
@@ -105,7 +161,7 @@ const togglePasswordVisibility = () => {
                     <div class="relative group">
                         <input
                             class="w-full h-12 px-4 rounded-lg border bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2b4bee]/20 focus:border-[#2b4bee] transition-all"
-                            id="email" name="email" placeholder="name@company.com"  type="email" v-model="formData.email"
+                            id="email" name="email" placeholder="name@company.com" type="email" v-model="formData.email"
                             :class="{ 'border-red-500': errors.email, 'border-slate-200 dark:border-slate-700': !errors.email }"
                             @input="errors.email = ''" />
                         <p v-if="errors?.email" class="text-red-500">{{ errors.email }}</p>
@@ -126,7 +182,9 @@ const togglePasswordVisibility = () => {
 
                         <button
                             class="absolute right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                            type="button" aria-label="Toggle password visibility" @click="togglePasswordVisibility">
+                            type="button" aria-label="Toggle password visibility"
+                            @click="togglePasswordVisibility(passwordInput)">
+
                             <span class="material-symbols-outlined text-[22px]">visibility</span>
                         </button>
                     </div>
@@ -153,6 +211,4 @@ const togglePasswordVisibility = () => {
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

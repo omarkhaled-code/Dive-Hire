@@ -11,7 +11,8 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  return await $fetch(`${config.public.apiBase}/me`, {
+  return await $fetch(`${config.public.apiBase}/logout`, {
+    method:"POST",
     headers: {
       Authorization: `Bearer ${token}`,
     },

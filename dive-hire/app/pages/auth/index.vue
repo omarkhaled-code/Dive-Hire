@@ -1,17 +1,23 @@
 <script setup lang="ts">
 const mode = ref('login') // login or register
 
+const {user} = useAuth()
 definePageMeta({
-    layout:'auth'
+    layout: 'auth',
+    middleware: ['guest']
 })
+
+if(user.value) {
+    navigateTo('/')
+}
+
 
 </script>
 
 <template>
     <main class="flex-grow flex items-stretch h-[100vh]">
         <!-- Split Screen: Left Side (Branding/Social Proof) -->
-        <div
-            class="hidden lg:flex lg:w-1/2 relative bg-[#2b4bee] items-center justify-center p-12 overflow-hidden">
+        <div class="hidden lg:flex lg:w-1/2 relative bg-[#2b4bee] items-center justify-center p-12 overflow-hidden">
             <div class="absolute inset-0 opacity-20 pointer-events-none"
                 data-alt="Subtle white grid pattern on blue background"
                 style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;">
@@ -56,13 +62,11 @@ definePageMeta({
                 </div>
             </div>
         </div>
+
         <AuthLogin v-if="mode === 'login'" @switch-mode="mode = 'register'" />
         <AuthRegister v-else-if="mode === 'register'" @switch-mode="mode = 'login'" />
-        
+
     </main>
 </template>
 
-<style scoped>
-
-</style>
-
+<style scoped></style>

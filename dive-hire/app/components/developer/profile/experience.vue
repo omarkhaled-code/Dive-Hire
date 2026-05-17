@@ -1,10 +1,15 @@
 <script setup lang="ts">
 
+const {user} = useAuth()
 
 const profile = defineModel< any>('profile')
 
-console.log("Modal Profile: ", profile.value);
 
+
+
+console.log("USER: ", user.value);
+
+console.log("PROFILE: ", profile.value);
 
 const handleAddExperience = () => {
     if (profile.value.experiences.length >= 5) {

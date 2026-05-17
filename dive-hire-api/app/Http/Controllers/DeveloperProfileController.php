@@ -23,116 +23,239 @@ class DeveloperProfileController extends Controller
 
     public function store(Request $request)
     {
-        // return $request->all();
         $user = auth()->user();
-        $test = null;
 
+        if (!$user || $user->role !== 'developer') {
 
-        if ($user->role !== 'developer') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
         }
 
         $data = $request->validate([
-            // Basic profile
-            'avatar'           => 'nullable|image',
-            'experience_years' => 'nullable|integer',
-            'location'         => 'nullable|string',
-            'portfolio_link'   => 'nullable|url',
-            'phone'            => 'nullable|string',
-            'cv'               => 'nullable|file|mimes:pdf,doc,docx|max:2048',
 
-            // After ✅
-            'skills'   => 'nullable|array',
-            'skills.*' => 'string|max:50',
+            /*
+        |--------------------------------------------------------------------------
+        | Basic Profile
+        |--------------------------------------------------------------------------
+        */
 
-            // Experiences
-            'experiences'               => 'nullable|array',
-            'experiences.*.company'     => 'required|string',        // ✅ just required
-            'experiences.*.role'        => 'required|string',        // ✅
-            'experiences.*.location'    => 'nullable|string',
-            'experiences.*.start_date'  => 'required|date',          // ✅
-            'experiences.*.end_date'    => 'nullable|date',
-            'experiences.*.description' => 'nullable|string',
+            'avatar'            => 'nullable|image|max:2048',
+            'experience_years'  => 'nullable|integer|min:0',
+            'location'          => 'nullable|string|max:255',
+            'portfolio_link'    => 'nullable|url',
+            'phone'             => 'nullable|string|max:30',
+            'job_title'         => 'nullable|string|max:255',
+            'bio'               => 'nullable|string',
+            'ready_for_work'    => 'nullable|string|max:255',
 
-            // Projects
-            'projects'               => 'nullable|array',
-            'projects.*.title'       => 'required|string',           // ✅
-            'projects.*.description' => 'nullable|string',
-            'projects.*.url'         => 'nullable|url',
-            'projects.*.image'       => 'nullable|image',
-            'projects.*.skills'      => 'nullable|array',
-            'projects.*.skills.*'    => 'string|max:50',
+            'cv'                => 'nullable|file|mimes:pdf,doc,docx|max:4096',
+
+            /*
+        |--------------------------------------------------------------------------
+        | Skills
+        |--------------------------------------------------------------------------
+        */
+
+            'skills'            => 'nullable|array',
+            'skills.*'          => 'string|max:50',
+
+            /*
+        |--------------------------------------------------------------------------
+        | Experiences
+        |--------------------------------------------------------------------------
+        */
+
+            'experience'                        => 'nullable|array',
+
+            'experience.*.company_name'         => 'required|string|max:255',
+
+            'experience.*.job_title'            => 'required|string|max:255',
+
+            'experience.*.start_date'           => 'required|date',
+
+            'experience.*.end_date'             => 'nullable|date|after_or_equal:experience.*.start_date',
+
+            'experience.*.achievements'         => 'nullable|array',
+
+            'experience.*.achievements.*'       => 'nullable|string',
+
+            /*
+        |--------------------------------------------------------------------------
+        | Projects
+        |--------------------------------------------------------------------------
+        */
+
+            'project'                           => 'nullable|array',
+
+            'project.*.title'                  => 'required|string|max:255',
+
+            'project.*.description'            => 'nullable|string',
+
+            'project.*.projectLink'            => 'nullable|url',
+
+            'project.*.thumbnail'              => 'nullable|image|max:4096',
+
+            'project.*.techStack'              => 'nullable|array',
+
+            'project.*.techStack.*'            => 'nullable|string|max:50',
+
         ]);
 
-        // 1. Handle avatar upload
+        /*
+    |--------------------------------------------------------------------------
+    | Upload Avatar
+    |--------------------------------------------------------------------------
+    */
+
         if ($request->hasFile('avatar')) {
-            $data['avatar'] = $request->file('avatar')->store('avatars', 'public');
+
+            $data['avatar'] = $request
+                ->file('avatar')
+                ->store('avatars', 'public');
         }
 
-        // 2. Handle cv upload
+        /*
+    |--------------------------------------------------------------------------
+    | Upload CV
+    |--------------------------------------------------------------------------
+    */
+
         if ($request->hasFile('cv')) {
-            $data['cv_path'] = $request->file('cv')->store('cvs', 'private');
+
+            $data['cv_path'] = $request
+                ->file('cv')
+                ->store('cvs', 'private');
         }
 
         $data['user_id'] = $user->id;
 
-        // 3. Create or update basic profile
+        /*
+    |--------------------------------------------------------------------------
+    | Create / Update Profile
+    |--------------------------------------------------------------------------
+    */
+
         $profile = DeveloperProfile::updateOrCreate(
-            ['user_id' => $user->id],
-            $data
+            [
+                'user_id' => $user->id
+            ],
+            [
+                'avatar'            => $data['avatar'] ?? null,
+                'experience_years'  => $data['experience_years'] ?? null,
+                'location'          => $data['location'] ?? null,
+                'portfolio_link'    => $data['portfolio_link'] ?? null,
+                'phone'             => $data['phone'] ?? null,
+                'job_title'         => $data['job_title'] ?? null,
+                'bio'               => $data['bio'] ?? null,
+                'ready_for_work'    => $data['ready_for_work'] ?? null,
+                'cv_path'           => $data['cv_path'] ?? null,
+            ]
         );
 
-        // 4. Sync skills
-        if ($request->has('skills')) {
-            $profile->skills()->sync($this->resolveSkills($request->skills));
+        /*
+    |--------------------------------------------------------------------------
+    | Sync Skills
+    |--------------------------------------------------------------------------
+    */
+
+        if (!empty($data['skills'])) {
+
+            $profile->skills()->sync(
+                $this->resolveSkills($data['skills'])
+            );
         }
 
-        // 5. Handle experiences
-        if ($request->has('experiences')) {
-            // delete old ones first then recreate
+        /*
+    |--------------------------------------------------------------------------
+    | Experiences
+    |--------------------------------------------------------------------------
+    */
+
+        if (!empty($data['experience'])) {
+
             $profile->experiences()->delete();
 
-            foreach ($request->experiences as $experience) {
-                $profile->experiences()->create($experience);
+            foreach ($data['experience'] as $experience) {
+
+                $profile->experiences()->create([
+
+                    'company_name' => $experience['company_name'],
+
+                    'job_title'    => $experience['job_title'],
+
+                    'start_date'   => $experience['start_date'],
+
+                    'end_date'     => $experience['end_date'] ?? null,
+
+                    'achievements' => json_encode(
+                        $experience['achievements'] ?? []
+                    ),
+
+                ]);
             }
         }
 
-        // 6. Handle projects
-        if ($request->has('projects')) {
-            // delete old ones first then recreate
+        /*
+    |--------------------------------------------------------------------------
+    | Projects
+    |--------------------------------------------------------------------------
+    */
+
+        if (!empty($data['project'])) {
+
             $profile->projects()->delete();
 
-            foreach ($request->projects as $index => $projectData) {
+            foreach ($data['project'] as $index => $projectData) {
 
-                // handle project image upload
-                $imagePath = null;
-                if ($request->hasFile("projects.{$index}.image")) {
+                $thumbnailPath = null;
 
-                    $imagePath = $request->file("projects.{$index}.image")->store('projects', 'public');
-                    $test = $imagePath;
+                if ($request->hasFile("project.{$index}.thumbnail")) {
+
+                    $thumbnailPath = $request
+                        ->file("project.{$index}.thumbnail")
+                        ->store('projects', 'public');
                 }
 
-                // create the project
                 $project = $profile->projects()->create([
+
                     'title'       => $projectData['title'],
+
                     'description' => $projectData['description'] ?? null,
-                    'url'         => $projectData['url'] ?? null,
-                    'image'       => $imagePath,
+
+                    'url'         => $projectData['projectLink'] ?? null,
+
+                    'image'       => $thumbnailPath,
+
                 ]);
 
-                // attach project skills
-                if (!empty($projectData['skills'])) {
-                    $project->skills()->sync($this->resolveSkills($projectData['skills']));
+                if (!empty($projectData['techStack'])) {
+
+                    $project->skills()->sync(
+                        $this->resolveSkills($projectData['techStack'])
+                    );
                 }
             }
         }
 
-        // return profile with all relations
-        return response()->json(
-            $profile->load(['skills', 'experiences', 'projects.skills'])
-        );
-    }
+        /*
+    |--------------------------------------------------------------------------
+    | Response
+    |--------------------------------------------------------------------------
+    */
 
+        return response()->json([
+
+            'message' => 'Profile saved successfully',
+
+            'profile' => $profile->load([
+                'skills',
+                'experiences',
+                'projects.skills'
+            ])
+
+        ], 200);
+    }
     public function show()
     {
         $user = auth()->user();
@@ -147,7 +270,7 @@ class DeveloperProfileController extends Controller
             return response()->json(['message' => 'Profile not found'], 404);
         }
         $profile->load(['skills', 'experiences', 'projects.skills']);
-        
+
         return response()->json($profile, 200);
     }
 

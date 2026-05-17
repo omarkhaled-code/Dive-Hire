@@ -8,11 +8,6 @@ use App\Http\Controllers\ListingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-
 
 // Group of routes that require authentication and prefix /v1
 Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
@@ -42,7 +37,9 @@ Route::middleware('auth:sanctum')->prefix('v1')->group(function () {
     Route::get('/applications/{applicationId}', [ApplicationController::class, 'show']);
 
     // user
-    Route::get('/me', [AuthController::class, 'user']);
+    // Route::get('/me', [AuthController::class, 'user']);
+    Route::get('/me', [AuthController::class, 'me']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
     // Add more authenticated routes here
 });

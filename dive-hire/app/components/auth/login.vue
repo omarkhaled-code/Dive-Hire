@@ -1,44 +1,90 @@
 <script setup lang="ts">
 
 const emit = defineEmits(['switch-mode'])
+
 const formData = reactive({
     email: '',
     password: ''
 })
 
-const errors = ref<{ email?: string; password?: string }>({})
+const errors = ref<{
+    email?: string
+    password?: string
+}>({})
 
-const passwordInput = ref<HTMLInputElement | null>(null);
+const passwordInput =
+    ref<HTMLInputElement | null>(null)
+
 const { validateLogin } = useValidation()
 
-const { login, error, loading } = useAuth()
+const {
+    login,
+    error,
+    loading,
+    clearError
+} = useAuth()
 
 const handleLogin = async () => {
 
+    /*
+    |--------------------------------------------------------------------------
+    | Reset Errors
+    |--------------------------------------------------------------------------
+    */
 
-    const result = validateLogin(formData.email, formData.password)
+    clearError()
+
+    errors.value = {}
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validation
+    |--------------------------------------------------------------------------
+    */
+
+    const result = validateLogin(
+        formData.email,
+        formData.password
+    )
 
     if (!result.email) {
-        return errors.value.email = 'The email is not correct'
-    }
 
+        errors.value.email =
+            'The email is not correct'
+
+        return
+
+    }
 
     if (!result.password) {
-        return errors.value.password = 'Password should contain at least 8 char!'
+
+        errors.value.password =
+            'Password should contain at least 8 characters'
+
+        return
+
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Login
+    |--------------------------------------------------------------------------
+    */
 
     await login(formData)
 
 }
 
-
 const togglePasswordVisibility = () => {
-    passwordInput.value?.type === 'password'
-        ? (passwordInput.value.type = 'text')
-        : (passwordInput.value!.type = 'password');
+
+    if (!passwordInput.value) return
+
+    passwordInput.value.type =
+        passwordInput.value.type === 'password'
+            ? 'text'
+            : 'password'
 }
 </script>
-
 <template>
     <div class="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-[#101322]">
         <div class="w-full max-w-[440px] flex flex-col">
@@ -83,9 +129,10 @@ const togglePasswordVisibility = () => {
                     <p v-if="errors?.password" class="text-red-500">{{ errors.password }}</p>
                 </div>
 
-                <!-- <p v-if="error" class="text-red-500 text-center">
+
+                <p v-if="error" class="text-red-500 text-center font-bold">
                     {{ error }}
-                </p> -->
+                </p>
 
                 <button
                     class="w-full h-12 bg-[#2b4bee] text-white font-bold rounded-lg shadow-lg shadow-[#2b4bee]/20 hover:bg-blue-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -142,6 +189,4 @@ const togglePasswordVisibility = () => {
     </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

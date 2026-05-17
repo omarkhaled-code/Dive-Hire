@@ -10,6 +10,12 @@ const profile = defineModel('profile')
 const addNewProject = () => {
     profile.value.projects.map((p) => p.isOpen = false)
 
+    const checkProjectsValue = profile.value.projects.every((project) =>
+        (project.title !== "" && project.description !== "")
+    )
+    if (!checkProjectsValue) return;
+
+
     // Add new project
     profile.value.projects.push({
         id: profile.value.projects.length + 1,
@@ -46,7 +52,7 @@ const removeProject = (id: number) => {
     <div class="create-projects">
 
 
-        <DeveloperCreateProfileProjectCard v-for="project in profile.projects" :key="project.id" :project="project"
+        <DeveloperProfileProjectCard v-for="project in profile.projects" :key="project.id" :project="project"
             @open-card="updateProject" @remove-project="removeProject" />
 
         <div class=" flex items-center justify-between cursor-pointer" @click="addNewProject">
