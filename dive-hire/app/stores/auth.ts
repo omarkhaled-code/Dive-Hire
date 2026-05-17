@@ -1,107 +1,160 @@
-// stores/auth.ts
 import type { LoginData, RegisterData, User } from "~/types/user";
 
 export const useAuthStore = defineStore("auth", () => {
-  // ───── State ─────
+  /*
+        |--------------------------------------------------------------------------
+        | State
+        |--------------------------------------------------------------------------
+        */
+
   const user = ref<User | null>(null);
-  const token = ref<string | null>(null);
+
   const loading = ref(false);
+
   const error = ref<string | null>(null);
 
-  // ───── Getters (computed) ─────
-  const isLoggedIn = computed(() => !!token.value);
-  const role = computed(() => user.value?.role ?? null); // 'developer' | 'employer' | null
+  /*
+        |--------------------------------------------------------------------------
+        | Getters
+        |--------------------------------------------------------------------------
+        */
+
+  const isLoggedIn = computed(() => !!user.value);
+
+  const role = computed(() => user.value?.role ?? null);
+
   const isDeveloper = computed(() => role.value === "developer");
+
   const isEmployer = computed(() => role.value === "employer");
+
   const isProfileComplete = computed(
     () => user.value?.profile_completed ?? false,
   );
 
-  // ───── Register ─────
+  /*
+        |--------------------------------------------------------------------------
+        | Clear Error
+        |--------------------------------------------------------------------------
+        */
+
+  function clearError() {
+    error.value = null;
+  }
+
+  /*
+        |--------------------------------------------------------------------------
+        | Register
+        |--------------------------------------------------------------------------
+        */
+
   async function register(form: RegisterData) {
     loading.value = true;
     error.value = null;
-    try {
-      const data = await $fetch<{ user: User; token: string }>(
-        "/api/auth/register",
-        {
-          method: "POST",
-          body: form,
-        },
-      );
-      _setSession(data.user, data.token);
-      loading.value = false;
-      handleNavigate(data.user, false);
-    } catch (err: any) {
-      error.value = err?.data?.message ?? "Registration failed";
-    }
-  }
 
-  // ───── Login ─────
-  async function login(form: LoginData) {
-    loading.value = true;
-    error.value = null;
     try {
       const data = await $fetch<{
         user: User;
-        token: string;
-        has_profile: boolean;
-      }>("/api/auth/login", {
+      }>("/api/auth/register", {
         method: "POST",
+
         body: form,
+
+        credentials: "include",
       });
-      _setSession(data.user, data.token);
-      loading.value = false;
-      handleNavigate(data.user, data.has_profile);
+
+      user.value = data.user;
+
+      handleNavigate(data.user, false);
     } catch (err: any) {
-      error.value = err?.data?.message ?? "Login failed";
+      error.value =  "Registration Failed, Unprocessable Content";
+    } finally {
+      loading.value = false;
     }
   }
 
-  // ───── Logout ─────
+  /*
+        |--------------------------------------------------------------------------
+        | Login
+        |--------------------------------------------------------------------------
+        */
+
+  async function login(form: LoginData) {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const data = await $fetch<{
+        user: User;
+        has_profile: boolean;
+      }>("/api/auth/login", {
+        method: "POST",
+
+        body: form,
+
+        credentials: "include",
+      });
+
+      user.value = data.user;
+
+      handleNavigate(data.user, data.has_profile);
+    } catch (err: any) {
+      // error.value = err?.data?.message ?? "Login failed";
+      error.value = "Invalid Credentials!";
+
+      
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /*
+        |--------------------------------------------------------------------------
+        | Logout
+        |--------------------------------------------------------------------------
+        */
+
   async function logout() {
     try {
       await $fetch("/api/auth/logout", {
         method: "POST",
-        headers: { Authorization: `Bearer ${token.value}` },
+
+        credentials: "include",
       });
-    } finally {
-      _clearSession();
-      navigateTo("/auth/login");
+      user.value = null;
+      navigateTo("/auth");
+    } catch (error) {
+        return error
     }
   }
 
-  // ───── Fetch current user (on app boot) ─────
-  async function fetchUser() {
-    console.log(token);
+  /*
+        |--------------------------------------------------------------------------
+        | Fetch User
+        |--------------------------------------------------------------------------
+        */
 
-    if (!token.value) return;
+  async function fetchUser() {
     try {
-      const data = await $fetch<{ user: User }>("/api/auth/me", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      const data = await $fetch<{
+        user: User;
+      }>("/api/auth/me", {
+        credentials: "include",
       });
+
       user.value = data.user;
     } catch {
-      _clearSession(); // token expired or invalid
+      user.value = null;
     }
   }
 
-  // ───── Private helpers ─────
-  function _setSession(u: User, t: string) {
-    user.value = u;
-    token.value = t;
-    localStorage.setItem("token", token.value);
-  }
+  /*
+        |--------------------------------------------------------------------------
+        | Navigation
+        |--------------------------------------------------------------------------
+        */
 
-  function _clearSession() {
-    user.value = null;
-    token.value = null;
-    localStorage.removeItem("token");
-  }
-  function handleNavigate(user: any, hasProfile: boolean = false) {
-    console.log(user);
-
-    if (hasProfile === false) {
+  function handleNavigate(user: User, hasProfile: boolean = false) {
+    if (!hasProfile) {
       if (user.role === "developer") {
         navigateTo("/developer/profile/setup");
       } else if (user.role === "employer") {
@@ -111,23 +164,36 @@ export const useAuthStore = defineStore("auth", () => {
       navigateTo("/jobs");
     }
   }
-  function clearError() {
-    error.value = null;
-  }
 
   return {
-    // State
+    /*
+            |--------------------------------------------------------------------------
+            | State
+            |--------------------------------------------------------------------------
+            */
+
     user,
-    token,
     loading,
     error,
-    // Getters
+
+    /*
+            |--------------------------------------------------------------------------
+            | Getters
+            |--------------------------------------------------------------------------
+            */
+
     isLoggedIn,
     role,
     isDeveloper,
     isEmployer,
     isProfileComplete,
-    // Actions
+
+    /*
+            |--------------------------------------------------------------------------
+            | Actions
+            |--------------------------------------------------------------------------
+            */
+
     register,
     login,
     logout,

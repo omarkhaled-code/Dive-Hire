@@ -8,7 +8,7 @@ export default defineNuxtRouteMiddleware( async() => {
     
      
     
-    if(!isLoggedIn) {
+    if(isLoggedIn) {
         return navigateTo('/')
     }
 })

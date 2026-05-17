@@ -16,6 +16,7 @@ export const useValidation = () => {
 
   const validateRegister = (email: string, password: string) => {
     return {
+
       email: validateEmail(email),
       password: validatePassword(password),
     }
